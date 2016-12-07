@@ -5,30 +5,19 @@ using namespace std;
 int find(int set[],int a);
 void Union(int set[],int a,int b);
 #define max 501
-typedef struct edge_true *edge;
 
-struct edge_true{
-    int id;
-    int weight;
-    struct edge_true* next;
-};
-struct Vnode{
-    edge firstedge;
-};
-struct edge_false{
+struct edge{
     int node1;
     int node2;
     int weight;
 };
-edge del (edge head,int element);
-edge add(edge head,int element,int weight);
-bool cmp(edge_false a,edge_false b)
+bool cmp(edge a,edge b)
 {
     return a.weight<b.weight;
 }
 int main() {
-    struct Vnode *node;
-    struct edge_false *edgeFalse;
+    struct edge *edgeFalse;
+    struct edge *edgeTrue;
     int falsenumber=0;
     int truenumber=0;
     int set[max]={0};
@@ -38,15 +27,13 @@ int main() {
 
     int City1,City2,Cost,Status;
     cin>>N>>M;
-    node=(struct Vnode*)malloc(sizeof(struct Vnode)*(N+1));
-    edgeFalse=(struct edge_false*)malloc(sizeof(struct edge_false)*(M));
-    for(i=0;i<N+1;i++)
-    {
-        node[i].firstedge=NULL;
-    }
+    edgeFalse=(struct edge*)malloc(sizeof(struct edge)*(M));
+
+    edgeTrue=(struct edge*)malloc(sizeof(struct edge)*(M));
     for(i=0;i<M;i++)
     {
         edgeFalse[i].weight=edgeFalse[i].node1=edgeFalse[i].node2=0;
+        edgeTrue[i].weight=edgeTrue[i].node1=edgeTrue[i].node2=0;
     }
     for(i=0;i<M;i++) {
         cin >> City1 >> City2 >> Cost >> Status;
@@ -56,28 +43,9 @@ int main() {
             edgeFalse[falsenumber].weight = Cost;
             falsenumber++;
         } else if (Status == 1) {
-            edge temp = (edge) malloc(sizeof(struct edge_true));
-            temp->weight = Cost;
-            temp->id = City2;
-            temp->next = NULL;
-            if (node[City1].firstedge == NULL) {
-                node[City1].firstedge = temp;
-            } else {
-                edge t = node[City1].firstedge;
-                while (t->next)t = t->next;
-                t->next = temp;
-            }
-            edge temp2=(edge)malloc(sizeof(struct edge_true));
-            temp2->weight = Cost;
-            temp2->id = City1;
-            temp2->next = NULL;
-            if (node[City2].firstedge == NULL) {
-                node[City2].firstedge = temp2;
-            } else {
-                edge t = node[City2].firstedge;
-                while (t->next)t = t->next;
-                t->next = temp2;
-            }
+            edgeTrue[truenumber].node1 = City1;
+            edgeTrue[truenumber].node2 = City2;
+            edgeTrue[truenumber].weight = Cost;
             truenumber++;
         }
     }
@@ -85,28 +53,16 @@ int main() {
     //-----------------------------------------------------------
     for(k=1;k<N+1;k++)
     {
-        edge temp=node[k].firstedge;
-        int id=k;
-        while(temp)
-        {
-            node[temp->id].firstedge=del(node[temp->id].firstedge,id);
-            temp=temp->next;
-        }
         for(i=0;i<N+1;i++)
         {
             set[i]=-1;
         }
         //初始化set
-        for(i=1;i<N+1;i++)
+        for(i=0;i<truenumber;i++)
         {
-            if(i!=k) {
-                edge temp = node[i].firstedge;
-                while (temp) {
-                    if (find(set, i) != find(set, temp->id)) {
-                        Union(set, find(set, i), find(set, temp->id));
-                    }
-                    temp = temp->next;
-                }
+            if(edgeTrue[i].node1!=k&&edgeTrue[i].node2!=k&&find(set,edgeTrue[i].node1)!=find(set,edgeTrue[i].node2))
+            {
+                Union(set,edgeTrue[i].node2,edgeTrue[i].node1);
             }
         }
         int mincost;
@@ -130,13 +86,6 @@ int main() {
                     Union(set, find(set, p1), find(set, p2));
                 }
             }
-        }
-        temp=node[k].firstedge;
-        id=k;
-        while(temp)
-        {
-            node[temp->id].firstedge=add(node[temp->id].firstedge,id,temp->weight);
-            temp=temp->next;
         }
     }
     int Max=0;
@@ -173,15 +122,16 @@ void Union(int set[],int a,int b)
 {
     if(find(set,a)<find(set,b))//a is bigger
     {
-        set[a]+=set[b];
-        set[b]=a;
+        set[find(set,a)]+=set[find(set,b)];
+        set[b]=find(set,a);
 
     }else
     {
-        set[b]+=set[a];
-        set[a]=b;
+        set[find(set,b)]+=set[find(set,a)];
+        set[a]=find(set,b);
     }
 }
+/*
 edge del (edge head,int element)
 {
     edge p=head;
@@ -197,8 +147,9 @@ edge del (edge head,int element)
         p->next=temp->next;
         free(temp);
         return head;
-    }
-}
+   }
+}*/
+/*
 edge add(edge head,int element,int weight)
 {
     edge p=head;
@@ -216,3 +167,4 @@ edge add(edge head,int element,int weight)
         return head;
     }
 }
+*/
