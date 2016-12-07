@@ -1,5 +1,4 @@
 #include <iostream>
-#include<stdlib.h>
 #include<algorithm>
 using namespace std;
 
@@ -7,6 +6,7 @@ int find(int set[],int a);
 void Union(int set[],int a,int b);
 #define max 501
 typedef struct edge_true *edge;
+
 struct edge_true{
     int id;
     int weight;
@@ -22,6 +22,10 @@ struct edge_false{
 };
 edge del (edge head,int element);
 edge add(edge head,int element,int weight);
+bool cmp(edge_false a,edge_false b)
+{
+    return a.weight<b.weight;
+}
 int main() {
     struct Vnode *node;
     struct edge_false *edgeFalse;
@@ -105,26 +109,26 @@ int main() {
                 }
             }
         }
-        int mincost=0;
-        for(i=0;i<falsenumber;i++)
-        {
-            mincost=0;
-            int parent1=find(set,edgeFalse[i].node1);
-            int parent2=find(set,edgeFalse[i].node2);
-            if(parent1!=parent2&&parent1!=k&&parent2!=k)
-            {
-                mincost=edgeFalse[i].weight;
-                for(int j=0;j<falsenumber;j++)
-                {
-                    int p1=find(set,edgeFalse[j].node1);
-                    int p2=find(set,edgeFalse[j].node2);
-                    //在所有假边中找能联通这两个集合且最小的
-                    if(((p1==parent1&&p2==parent2)||(p1==parent2&&p2==parent1))&&mincost>edgeFalse[j].weight)
-                        mincost=edgeFalse[j].weight;
+        int mincost;
+        sort(edgeFalse,edgeFalse+falsenumber,cmp);
+        for(i=0;i<falsenumber;i++) {
+            // mincost=0;
+            //int parent1=find(set,edgeFalse[i].node1);
+            //int parent2=find(set,edgeFalse[i].node2);
+            //if(parent1!=parent2&&parent1!=k&&parent2!=k)
+            //{
+            //  mincost=edgeFalse[i].weight;
+            //for(int j=0;j<falsenumber;j++)
+            //{
+            if (edgeFalse[i].node1 != k && edgeFalse[i].node2 != k) {
+                int p1 = find(set, edgeFalse[i].node1);
+                int p2 = find(set, edgeFalse[i].node2);
+                //在所有假边中找能联通这两个集合且最小的
+                if (p1 != p2) {
+                    mincost = edgeFalse[i].weight;
+                    cost[k] += mincost;
+                    Union(set, find(set, p1), find(set, p2));
                 }
-
-                cost[k]+=mincost;
-                Union(set,find(set,parent1),find(set,parent2));
             }
         }
         temp=node[k].firstedge;
